@@ -9,11 +9,15 @@ const enTranslations = {
     },
     calculator: {
         title: "Statistical Calculator",
-        description: "Enter values and corresponding weights separated by commas or spaces",
-        values: "Values e.g. 10 20 20 30",
-        weights: "Weights e.g. 1 2 1 3",
+        useWeights: "Usar pesos?",
+        description: "Enter values and their corresponding weights in the table below",
+        addRow: "Add row",
+        value: "Value",
+        weight: "Weight",
+        remove: "Remove",
         calculate: "Calculate",
         errorMessage: "Values and weights must have the same length",
+        emptyDataError: "Please enter at least one valid value and weight."
     },
     stats: {
         mean: "Mean",
@@ -42,11 +46,15 @@ const ptTranslations = {
     },
     calculator: {
         title: "Calculadora Estatística",
-        description: "Insira valores e pesos correspondentes separados por vírgulas ou espaços",
-        values: "Valores ex: 10 20 20 30",
-        weights: "Pesos ex: 1 2 1 3",
+        useWeights: "Use weights?",
+        description: "Insira valores e seus pesos correspondentes na tabela abaixo",
+        addRow: "Adicionar linha",
+        value: "Valor",
+        weight: "Peso",
+        remove: "Remover",
         calculate: "Calcular",
         errorMessage: "Valores e pesos devem ter o mesmo comprimento",
+        emptyDataError: "Por favor, insira pelo menos um valor e peso válidos."
     },
     stats: {
         mean: "Média",
@@ -75,11 +83,15 @@ const esTranslations = {
     },
     calculator: {
         title: "Calculadora Estadística",
-        description: "Ingrese valores y pesos correspondientes separados por comas o espacios",
-        values: "Valores ej: 10 20 20 30",
-        weights: "Pesos ej: 1 2 1 3",
+        useWeights: "¿Utilizar pesos?",
+        description: "Ingrese valores y sus pesos correspondientes en la tabla a continuación",
+        addRow: "Añadir fila",
+        value: "Valor",
+        weight: "Peso",
+        remove: "Eliminar",
         calculate: "Calcular",
         errorMessage: "Los valores y pesos deben tener la misma longitud",
+        emptyDataError: "Por favor, ingrese al menos un valor y peso válidos."
     },
     stats: {
         mean: "Media",

@@ -9,11 +9,20 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { Plus, Trash2 } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export default function App() {
   const { t } = useTranslation()
-  const [valuesInput, setValuesInput] = useState<string>("")
-  const [weightsInput, setWeightsInput] = useState<string>("")
+
+  // Use weights toggle
+  const [useWeights, setUseWeights] = useState(false)
+
+  // Data input rows
+  const [dataRows, setDataRows] = useState<{ id: number, value: string, weight: string }[]>([
+    { id: 1, value: "", weight: "" }
+  ])
+
   const [stats, setStats] = useState<{
     mean: number
     weightedMean: number
@@ -40,6 +49,26 @@ export default function App() {
     weightedCoefVar: 0,
   })
   const [frequencyData, setFrequencyData] = useState<{ name: string; count: number }[]>([])
+
+  // Add new row
+  const addRow = () => {
+    const newId = dataRows.length > 0 ? Math.max(...dataRows.map(row => row.id)) + 1 : 1
+    setDataRows([...dataRows, { id: newId, value: "", weight: "" }])
+  }
+
+  // Remove row
+  const removeRow = (id: number) => {
+    if (dataRows.length > 1) {
+      setDataRows(dataRows.filter(row => row.id !== id))
+    }
+  }
+
+  // Update row value
+  const updateRowValue = (id: number, field: 'value' | 'weight', newValue: string) => {
+    setDataRows(dataRows.map(row =>
+      row.id === id ? { ...row, [field]: newValue } : row
+    ))
+  }
 
   const calculateStats = (values: number[], weights: number[]) => {
     const n = values.length
@@ -101,18 +130,26 @@ export default function App() {
   }
 
   const handleCalculate = () => {
-    const values = valuesInput
-      .split(/[,;\s]+/)
-      .map((v) => Number.parseFloat(v))
-      .filter((v) => !isNaN(v))
-    const weights = weightsInput
-      .split(/[,;\s]+/)
-      .map((w) => Number.parseFloat(w))
-      .filter((w) => !isNaN(w))
-    if (values.length !== weights.length) {
-      alert(t("calculator.errorMessage"))
+    const values = dataRows
+      .map(row => Number.parseFloat(row.value))
+      .filter(v => !isNaN(v))
+
+    if (values.length === 0) {
+      alert("Por favor, insira pelo menos um valor válido.")
       return
     }
+
+    // Use default weight of 1 if weights are not being used
+    let weights: number[];
+    if (useWeights) {
+      weights = dataRows
+        .map(row => Number.parseFloat(row.weight) || 1)  // Use 1 as default if not provided
+        .filter((_, i) => !isNaN(Number.parseFloat(dataRows[i].value)))  // Keep only weights for valid values
+    } else {
+      // If not using weights, set all weights to 1
+      weights = Array(values.length).fill(1)
+    }
+
     calculateStats(values, weights)
   }
 
@@ -123,18 +160,72 @@ export default function App() {
           <CardTitle>{t("calculator.title")}</CardTitle>
           <CardDescription>{t("calculator.description")}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <Input
-            placeholder={t("calculator.values")}
-            value={valuesInput}
-            onChange={(e) => setValuesInput(e.target.value)}
-          />
-          <Input
-            placeholder={t("calculator.weights")}
-            value={weightsInput}
-            onChange={(e) => setWeightsInput(e.target.value)}
-          />
-          <Button onClick={handleCalculate}>{t("calculator.calculate")}</Button>
+        <CardContent>
+          <div className="flex items-center space-x-2 mb-4">
+            <Checkbox
+              id="use-weights"
+              checked={useWeights}
+              onCheckedChange={(checked: boolean) => setUseWeights(checked === true)}
+            />
+            <label htmlFor="use-weights" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              {t("calculator.useWeights")}
+            </label>
+          </div>
+
+          <div className="mb-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Valor</TableHead>
+                  {useWeights && <TableHead>Peso</TableHead>}
+                  <TableHead className="w-16"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dataRows.map(row => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        value={row.value}
+                        onChange={(e) => updateRowValue(row.id, 'value', e.target.value)}
+                        placeholder="Valor"
+                      />
+                    </TableCell>
+                    {useWeights && (
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={row.weight}
+                          onChange={(e) => updateRowValue(row.id, 'weight', e.target.value)}
+                          placeholder="Peso (padrão: 1)"
+                        />
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeRow(row.id)}
+                        disabled={dataRows.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={addRow} className="flex items-center gap-1">
+              <Plus className="h-4 w-4" /> Adicionar linha
+            </Button>
+            <Button onClick={handleCalculate} className="cursor-pointer">
+              {t("calculator.calculate")}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -157,16 +248,18 @@ export default function App() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>
-                {t("stats.weightedMean")}: {stats.weightedMean}
-              </p>
+              {useWeights && (
+                <p>
+                  {t("stats.weightedMean")}: {stats.weightedMean}
+                </p>
+              )}
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={frequencyData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -204,7 +297,7 @@ export default function App() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -244,7 +337,7 @@ export default function App() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -260,16 +353,18 @@ export default function App() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>
-                {t("stats.weightedVariance")}: {stats.weightedVariance}
-              </p>
+              {useWeights && (
+                <p>
+                  {t("stats.weightedVariance")}: {stats.weightedVariance}
+                </p>
+              )}
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={frequencyData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -285,16 +380,18 @@ export default function App() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>
-                {t("stats.weightedStdDev")}: {stats.weightedStdDev}
-              </p>
+              {useWeights && (
+                <p>
+                  {t("stats.weightedStdDev")}: {stats.weightedStdDev}
+                </p>
+              )}
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={frequencyData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -310,16 +407,18 @@ export default function App() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>
-                {t("stats.weightedCoefVar")}: {stats.weightedCoefVar}%
-              </p>
+              {useWeights && (
+                <p>
+                  {t("stats.weightedCoefVar")}: {stats.weightedCoefVar}%
+                </p>
+              )}
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={frequencyData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" />
+                  <Bar dataKey="count" fill="#ef4444" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
