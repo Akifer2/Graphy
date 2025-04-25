@@ -1,34 +1,48 @@
-"use client"
-
+/* ─── Hooks ─── */
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+
+/* ─── Layouts ─── */
 import Layout from "./layouts/layout"
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+/* ─── Components ─── */
 import {
-  Card, CardHeader, CardTitle, CardDescription,
-  CardContent, CardFooter
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent
+} from "@/components/ui/tabs"
+
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent
 } from "@/components/ui/card"
+
+
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell
+} from "@/components/ui/table"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import {
-  Table, TableHeader, TableRow, TableHead,
-  TableBody, TableCell
-} from "@/components/ui/table"
-import {
-  ResponsiveContainer, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip
-} from "recharts"
-import { Plus, Trash2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Accordion, AccordionItem,
-  AccordionTrigger, AccordionContent
-} from "@/components/ui/accordion"
+
+import StatCard from "./components/stat-card"
+
+/*  ─── Icons ─── */
+
+import { Plus, Trash2 } from "lucide-react"
 
 /*  ─── KaTeX ─── */
 import "katex/dist/katex.min.css"
-import { BlockMath } from "react-katex"
 
 type DataRow = { id: number; value: string; weight: string }
 type StepsMap = Record<string, string[]>
@@ -103,50 +117,77 @@ export default function App() {
 
     /* ─── LaTeX steps ─── */
     const L: StepsMap = {}
+
+    /* ────── MÉDIA ────── */
+    const sumExpr = values.join(" + ")
     L.mean = [
-      `\\displaystyle \\sum_{i=1}^{${n}} x_i = ${sum}`,
-      `\\bar{x} = \\frac{${sum}}{${n}} = ${mean}`
+      `\\sum_{i=1}^{${n}} x_i = ${sumExpr} = ${sum}`,
+      `\\bar{x} = \\frac{${sum}}{${n}} = ${mean}`,
     ]
+
     if (useWeights) {
+      const wSumExpr = values.map((v, i) => `${weights[i]}\\cdot${v}`).join(" + ")
+      const weightedSum = values.reduce((s, v, i) => s + v * weights[i], 0)
       L.mean.push(
-        `\\bar{x}_{\\text{w}} = \\frac{\\sum w_i x_i}{\\sum w_i} = ${weightedMean}`
+        `\\sum w_i x_i = ${wSumExpr} = ${weightedSum}`,
+        `\\sum w_i = ${weights.join(" + ")} = ${totalWeight}`,
+        `\\bar{x}_{\\mathrm{w}} = \\frac{${weightedSum}}{${totalWeight}} = ${weightedMean}`,
       )
     }
 
+    /* ───── MEDIANA ───── */
     L.median = [
-      `\\text{Dados ordenados: } ${sorted.join(",\\;")}`,
-      `\\tilde{x} = ${median}`
+      `\\text{Dados ordenados}:\\; ${sorted.join(",\\;")}`,
+      `\\tilde{x} = ${median}`,
     ]
 
+    /* ────── MODA ─────── */
     L.mode = noMode
       ? [`\\text{Sem moda (todas as frequências }\\le 1)`]
       : [
-        `\\text{Mapa de frequências: } ${JSON.stringify(freq).replace(/"/g, "")}`,
-        `\\text{Moda(s): } ${mode.join(",\\;")}`
+        `\\text{Mapa de frequências}:\\; ${JSON.stringify(freq).replace(/"/g, "")}`,
+        `\\text{Moda(s)} = ${mode.join(",\\;")}`,
       ]
 
+    /* ─── VARIÂNCIA ──── */
+    const devTerms = values.map(v => `(${v}-${mean})^{2}`)
+    const devSum = values.reduce((s, v) => s + (v - mean) ** 2, 0).toFixed(2)
+
     L.variance = [
-      `\\sigma^2 = \\frac{\\sum (x_i - \\bar{x})^{2}}{n} = ${variance}`
+      `\\sum (x_i-\\bar{x})^{2} = ${devTerms.join(" + ")} = ${devSum}`,
+      `\\sigma^{2} = \\frac{${devSum}}{${n}} ≈ ${variance}`,
     ]
-    if (useWeights) {
-      L.variance.push(
-        `\\sigma^2_{\\text{w}} = \\frac{\\sum w_i (x_i - \\bar{x}_{\\text{w}})^{2}}{\\sum w_i} = ${weightedVariance}`
-      )
-    }
 
+    /* ─── DESVIO-PADRÃO ─ */
     L.stdDev = [
-      `\\sigma = \\sqrt{\\sigma^2} = ${stdDev}`
+      `\\sigma = \\sqrt{${variance}} ≈ ${stdDev}`,
     ]
-    if (useWeights) {
-      L.stdDev.push(`\\sigma_{\\text{w}} = ${weightedStdDev}`)
-    }
 
+    /* ── COEF. VARIAÇÃO ─ */
     L.coefVar = [
-      `CV = \\frac{\\sigma}{\\bar{x}} \\times 100\\% = ${coefVar}\\%`
+      `CV = \\frac{${stdDev}}{${mean}}\\times 100\\% ≈ ${coefVar}\\%`,
     ]
+
+    /* ─── Casos ponderados ─ */
     if (useWeights) {
+      const wDevTerms = values.map(
+        (v, i) => `${weights[i]}\\cdot(${v}-${weightedMean})^{2}`,
+      )
+      const wDevSum = values
+        .reduce((s, v, i) => s + weights[i] * (v - weightedMean) ** 2, 0)
+        .toFixed(2)
+
+      L.variance.push(
+        `\\sum w_i (x_i-\\bar{x}_{\\mathrm{w}})^{2} = ${wDevTerms.join(" + ")} = ${wDevSum}`,
+        `\\sigma^{2}_{\\mathrm{w}} = \\frac{${wDevSum}}{${totalWeight}} ≈ ${weightedVariance}`,
+      )
+
+      L.stdDev.push(
+        `\\sigma_{\\mathrm{w}} = \\sqrt{${weightedVariance}} ≈ ${weightedStdDev}`,
+      )
+
       L.coefVar.push(
-        `CV_{\\text{w}} = \\frac{\\sigma_{\\text{w}}}{\\bar{x}_{\\text{w}}} \\times 100\\% = ${weightedCoefVar}\\%`
+        `CV_{\\mathrm{w}} = \\frac{${weightedStdDev}}{${weightedMean}}\\times 100\\% ≈ ${weightedCoefVar}\\%`,
       )
     }
 
@@ -324,68 +365,5 @@ export default function App() {
         </TabsContent>
       </Tabs>
     </Layout>
-  )
-}
-
-/* ───────────────────── componente auxiliar ───────────────────── */
-type StatCardProps = {
-  title: string
-  extra?: string
-  data: { name: string; count: number }[]
-  latex?: string[]
-}
-function StatCard({ title, extra, data, latex }: StatCardProps) {
-  return (
-    <Card>
-      <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
-      <CardContent>
-        {extra && <p className="mb-2">{extra}</p>}
-
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="count" fill="#ef4444" />
-          </BarChart>
-        </ResponsiveContainer>
-
-        {latex && (
-          <Accordion type="single" collapsible className="mt-4">
-            <AccordionItem value="steps">
-              <AccordionTrigger>Detalhamento do cálculo</AccordionTrigger>
-              <AccordionContent>
-                {latex.map((expr, i) => (
-                  <BlockMath key={i} math={expr} />
-                ))}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        )}
-      </CardContent>
-
-      {/* tabela de frequência opcional */}
-      {data.length > 0 && (
-        <CardFooter>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Valor</TableHead>
-                <TableHead>Frequência</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map(d => (
-                <TableRow key={d.name}>
-                  <TableCell>{d.name}</TableCell>
-                  <TableCell>{d.count}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardFooter>
-      )}
-    </Card>
   )
 }
