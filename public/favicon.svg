@@ -1,11 +1,17 @@
-<svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2.5 28L24.5 13L43 22.5L61.5 6.5" stroke="#FB2C36" stroke-width="8"/>
-<circle cx="6.5" cy="25.5" r="6" fill="#FB2C36" stroke="#FB2C36"/>
-<circle cx="24.5" cy="13.5" r="6" fill="#FB2C36" stroke="#FB2C36"/>
-<circle cx="43.5" cy="21.5" r="6" fill="#FB2C36" stroke="#FB2C36"/>
-<circle cx="61.5" cy="6.5" r="6" fill="#FB2C36" stroke="#FB2C36"/>
-<path d="M31.25 67H19.25V33C19.25 31.8954 20.1454 31 21.25 31H29.25C30.3546 31 31.25 31.8954 31.25 33V67Z" fill="#FB2C36" stroke="#FB2C36"/>
-<path d="M67 67H55V27C55 25.8954 55.8954 25 57 25H65C66.1046 25 67 25.8954 67 27V67Z" fill="#FB2C36" stroke="#FB2C36"/>
-<path d="M49 67H37V39C37 37.8954 37.8954 37 39 37H47C48.1046 37 49 37.8954 49 39V67Z" fill="#FB2C36" stroke="#FB2C36"/>
-<path d="M13 67H1V45C1 43.8954 1.89543 43 3 43H11C12.1046 43 13 43.8954 13 45V67Z" fill="#FB2C36" stroke="#FB2C36"/>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2_74)">
+<path d="M0 10C0 4.47715 4.47715 0 10 0H90C95.5228 0 100 4.47715 100 10V90C100 95.5228 95.5228 100 90 100H10C4.47715 100 0 95.5228 0 90V10Z" fill="url(#paint0_linear_2_74)"/>
+<path d="M30.6102 39.5929H18.3499C18.1567 39.5932 18 39.7502 18 39.9444V78.6485C18.0002 78.8425 18.1568 78.9998 18.3499 79H30.6102C30.8035 79 30.9599 78.8426 30.9601 78.6485V39.9444C30.9601 39.7501 30.8036 39.5929 30.6102 39.5929Z" stroke="white" stroke-width="6"/>
+<path d="M43.31 57.1848H56.4456C56.6391 57.1848 56.7966 57.3431 56.7966 57.5374V78.6485C56.7964 78.8426 56.639 79 56.4456 79H43.31C43.1169 78.9998 42.9603 78.8425 42.9601 78.6485V57.5374C42.9601 57.3432 43.1168 57.185 43.31 57.1848Z" stroke="white" stroke-width="6"/>
+<path d="M81.4068 22H69.1465C68.9532 22 68.7968 22.1574 68.7966 22.3515V78.6485C68.7968 78.8426 68.9532 79 69.1465 79H81.4068C81.5999 78.9998 81.7565 78.8425 81.7567 78.6485V22.3515C81.7565 22.1575 81.5999 22.0002 81.4068 22Z" stroke="white" stroke-width="6"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2_74" x1="50" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF0000"/>
+<stop offset="1" stop-color="#890047"/>
+</linearGradient>
+<clipPath id="clip0_2_74">
+<rect width="100" height="100" fill="white"/>
+</clipPath>
+</defs>
 </svg>
